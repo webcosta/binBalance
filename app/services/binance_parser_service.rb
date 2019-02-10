@@ -28,7 +28,8 @@ class BinanceParserService
         if entry.parsed_data.present?
         else
             entry.update(parsed_data: parsed_data)
-            puts "Balances updated"
+            puts "Balances updated:"
+            puts "#{parsed_data}"
         end
     end
 end
