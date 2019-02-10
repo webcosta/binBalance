@@ -11,8 +11,8 @@ class BinanceGrabberService
     end
 
     def fetch_data
-        @Apikey = "hNUOcCVXkJNCE927O7sWKHqV9iqgHLFwBfCvvJHh3Y25HIc4ZfyqU0yKQCvN3vl5"
-        @SignatureKey = "pZZ5CrsCRtJ4vWzNMJr4wAj8Pm6Jq4tigMKfsgOgnQTZn3vKHPJBzNLIk5CJCYZu"
+        @Apikey = ""
+        @SignatureKey = ""
         
         timestamp = DateTime.now.strftime('%Q')
         uri = URI(@api_endpoint)
