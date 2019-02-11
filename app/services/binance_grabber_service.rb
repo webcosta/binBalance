@@ -11,6 +11,7 @@ class BinanceGrabberService
     end
 
     def fetch_data
+
         @api_key = ENV["API_KEY"]
         @signature_key = ENV["SIGNATURE_KEY"]
 
