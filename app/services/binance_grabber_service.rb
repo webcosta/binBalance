@@ -11,17 +11,19 @@ class BinanceGrabberService
     end
 
     def fetch_data
-        @Apikey = ""
-        @SignatureKey = ""
+
+        @api_key = ENV["API_KEY"]
+        @signature_key = ENV["SIGNATURE_KEY"]
+
         
         timestamp = DateTime.now.strftime('%Q')
         uri = URI(@api_endpoint)
-        queryString = "timestamp=#{timestamp}"
+        query_string = "timestamp=#{timestamp}"
 
-        hmac = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha256'), @SignatureKey, queryString)        
+        hmac = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha256'), @signature_key, query_string)        
 
-        req = Net::HTTP::Get.new(uri+"?#{queryString}&signature=#{hmac}")
-        req['X-MBX-APIKEY'] = "#{@Apikey}"
+        req = Net::HTTP::Get.new(uri+"?#{query_string}&signature=#{hmac}")
+        req['X-MBX-APIKEY'] = @api_key
 
         res = Net::HTTP.start(uri.hostname, use_ssl: true) { |http| http.request(req) }
         
@@ -29,13 +31,16 @@ class BinanceGrabberService
         parsed_response = JSON.parse(raw_data)  
         
         if RequestResult.any? 
-            prev_timestamp = RequestResult.order("created_at").last["created_at"]
-            last_timestamp = (prev_timestamp.to_f * 1000).to_i
+            
+            # Decode Binance data
+            prev_timestamp = RequestResult.select("raw_data").last.as_json
+            prev_timestamp_decoded = prev_timestamp["raw_data"]
+            prev_timestamp_json = JSON.parse(prev_timestamp_decoded)
+            last_timestamp = prev_timestamp_json["updateTime"]
 
             if parsed_response["updateTime"].to_i>last_timestamp.to_i
                 puts "New entry, updated at: #{parsed_response["updateTime"]}" 
-                newEntry = saveEntry(raw_data)
-
+                saveEntry(raw_data)
             else
                 puts "No changes in portfolio"
             end
@@ -48,7 +53,7 @@ class BinanceGrabberService
     private
      
     def saveEntry(raw_data)
-        return RequestResult.create(raw_data: raw_data)
+        RequestResult.create!(raw_data: raw_data)
     end
 end
 
